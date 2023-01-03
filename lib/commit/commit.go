@@ -6,13 +6,26 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+	"regexp"
 )
 
 type Commit struct {
 	Hash    string
 	Date    time.Time
-	Message string
+	Subject string
 	Author  string
+}
+
+func GroupCommitByLabel() map[string]int {
+	groupedCommit := map[string]int{}
+
+	commits := getCommits()
+	for _, commit := range commits {
+		label := regexp.MustCompile(`:.*?:`).FindString(commit.Subject)
+		groupedCommit[label]++
+	}
+
+	return groupedCommit
 }
 
 func getCommits() (commits []Commit) {
@@ -31,7 +44,7 @@ func getCommits() (commits []Commit) {
 		commit := Commit{
 			Hash:    commitMetaData[0],
 			Date:    date,
-			Message: commitMetaData[2],
+			Subject: commitMetaData[2],
 			Author:  commitMetaData[3],
 		}
 		commits = append(commits, commit)
